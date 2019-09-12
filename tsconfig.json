@@ -3,7 +3,7 @@
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["dom", "es2018"],
+    "lib": ["dom", "es2019"],
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noUnusedLocals": true,

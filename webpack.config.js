@@ -1,7 +1,7 @@
 'use strict';
 
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { DefinePlugin, NormalModuleReplacementPlugin } = require('webpack');
+const { NormalModuleReplacementPlugin } = require('webpack');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const NodemonPlugin = require('nodemon-webpack-plugin');
 const packageJson = require('./package.json');
@@ -21,6 +21,7 @@ module.exports = (env = {}) => {
     },
     stats: {
       modules: false, // We don't need to see this
+      warningsFilter: /^(?!CriticalDependenciesWarning$)/,
     },
     module: {
       rules: [

@@ -8,6 +8,10 @@ export class Logger {
     Logger.log(`${name}:`, ...message);
   }
 
+  static logJob(name: string, jobId: string, ...message: any[]): void {
+    Logger.log(`${name}[${jobId}]:`, ...message);
+  }
+
   private static getFormattedTime(includeDate: boolean = true): string {
     const options: Intl.DateTimeFormatOptions = {
       hour: '2-digit',

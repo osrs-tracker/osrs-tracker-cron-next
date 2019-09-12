@@ -9,4 +9,4 @@ RUN npm run build:ci
 FROM node:10-alpine
 WORKDIR /usr/app/
 COPY --from=builder /usr/src/app/dist/ ./
-CMD [ "node", "node-typescript-starter.js" ]
+CMD [ "node", "osrs-tracker-cron.js" ]

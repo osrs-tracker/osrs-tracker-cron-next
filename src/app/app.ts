@@ -1,5 +1,4 @@
 import Agenda from 'agenda';
-import { Worker } from 'cluster';
 import { MongoClient } from 'mongodb';
 import { config } from '../config/config';
 import { Logger } from './common/logger';
@@ -10,20 +9,15 @@ export class App {
   private agenda: Agenda;
   private mongo: MongoClient;
 
-  static async run(worker: Worker): Promise<App> {
+  static async run(): Promise<App> {
     const app = new App();
     try {
-      await app.start(worker);
+      await app.start();
     } catch (e) {
       app.kill();
-      Logger.logTask('APP_START', `FAILED TO START APP ON WORKER ${worker.id}`, e);
+      Logger.logTask('APP_START', 'FAILED TO START APP', e);
     }
     return app;
-  }
-
-  public kill(): void {
-    this.agenda.stop();
-    this.mongo.close(true);
   }
 
   private constructor() {
@@ -31,12 +25,18 @@ export class App {
     this.agenda = new Agenda();
   }
 
-  private async start(worker: Worker): Promise<void> {
+  kill(): void {
+    this.agenda.stop();
+    this.mongo.close(true);
+  }
+
+  private async start(): Promise<void> {
     this.mongo = await this.mongo.connect();
 
     this.agenda.mongo(this.mongo.db(config.mongo.database));
 
-    await Job.startJobs(this.mongo, this.agenda);
+    await Job.startAgendaJobs(this.agenda);
+    Job.startCommonJobs(this.mongo);
   }
 
 }

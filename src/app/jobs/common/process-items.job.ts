@@ -1,20 +1,18 @@
 import Axios from 'axios';
 import { plainToClass } from 'class-transformer';
 import { MongoClient } from 'mongodb';
-import { config } from '../../config/config';
-import { Logger } from '../common/logger';
-import { ItemPage, ItemResponse } from '../models/item';
-import { ToxMqResponse } from '../models/tox-mq-response';
-import { Job } from './job';
-import { MU } from '../common/utils/mongo.utils';
+import { config } from '../../../config/config';
+import { Logger } from '../../common/logger';
+import { ItemPage, ItemResponse } from '../../models/item';
+import { ToxMqResponse } from '../../models/tox-mq-response';
+import { Job } from '../job';
+import { MU } from '../../common/utils/mongo.utils';
 
 export const PROCESS_ITEMS = 'PROCESS_ITEMS';
-export const PROCESS_ITEMS_INTERVAL = '7 seconds';
+export const PROCESS_ITEMS_CRON = '*/7 * * * * *';
 
-export const ITEM_COL: string = 'item';
-
-export async function processItems(mongo: MongoClient, done: (err?: Error | undefined) => void): Promise<void> {
-  Job.execute(PROCESS_ITEMS, done, async (jobId) => {
+export async function processItems(mongo: MongoClient): Promise<void> {
+  Job.execute(PROCESS_ITEMS, async (jobId) => {
     const toxMqResponse = await popFromItemQueue();
 
     if (toxMqResponse === null) {
@@ -28,7 +26,7 @@ export async function processItems(mongo: MongoClient, done: (err?: Error | unde
 
     const items = await fetchItems(itemPage);
 
-    const bulkWrite = await MU.COL(mongo, ITEM_COL).bulkWrite(
+    const bulkWrite = await MU.col(mongo, MU.COLLECTIONS.ITEM_COLLECTION).bulkWrite(
       items.map(item => ({
         updateOne: {
           filter: { id: item.id },
@@ -51,9 +49,7 @@ export async function processItems(mongo: MongoClient, done: (err?: Error | unde
 
 async function popFromItemQueue(): Promise<ToxMqResponse<ItemPage> | null> {
   const toxMqResponse = await Axios.post<ToxMqResponse<ItemPage>>(
-    `${config.toxMqUrl}-dbu/pop`,
-    undefined,
-    config.axios,
+    `${config.toxMqUrl}-dbu/pop`, undefined, config.axios,
   );
 
   if (toxMqResponse.status === 204) return null;
@@ -76,8 +72,6 @@ async function fetchItems({ letter, page }: ItemPage): Promise<ItemResponse[]> {
 
 async function ackToxMqMessage(toxMqResponse: ToxMqResponse<ItemPage>): Promise<void> {
   await Axios.post<ToxMqResponse<ItemPage>>(
-    `${config.toxMqUrl}-dbu/ack`,
-    [toxMqResponse._id],
-    config.axios,
+    `${config.toxMqUrl}-dbu/ack`, [toxMqResponse._id], config.axios,
   );
 }

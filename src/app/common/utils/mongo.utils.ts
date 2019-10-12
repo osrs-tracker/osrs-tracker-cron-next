@@ -7,11 +7,16 @@ import { Db, MongoClient, Collection } from 'mongodb';
  * Collection of helper functions for MongoDB.
  */
 export class MU {
-  static DB(mongo: MongoClient): Db {
+
+  static COLLECTIONS = {
+    ITEM_COLLECTION: 'item',
+  };
+
+  static db(mongo: MongoClient): Db {
     return mongo.db(config.mongo.database);
   }
 
-  static COL(mongo: MongoClient, collection: string): Collection {
-    return this.DB(mongo).collection(collection);
+  static col(mongo: MongoClient, collection: string): Collection {
+    return this.db(mongo).collection(collection);
   }
 }

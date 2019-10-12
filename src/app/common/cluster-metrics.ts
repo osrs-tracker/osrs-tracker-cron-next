@@ -1,17 +1,12 @@
 import express from 'express';
-import { AggregatorRegistry } from 'prom-client';
+import { collectDefaultMetrics, register } from 'prom-client';
 import { config } from '../../config/config';
-import { Logger } from './logger';
 
-export function initClusterMetrics(): void {
-  const metricsApp = express();
-  const aggregatorRegistry = new AggregatorRegistry();
+export function initMetrics(): void {
+  collectDefaultMetrics();
 
-  metricsApp.use('/metrics', (_req, res) => aggregatorRegistry.clusterMetrics((err, metrics) => {
-    if (err) Logger.logTask('CLUSTER_METRICS', err);
-    res.set('Content-Type', aggregatorRegistry.contentType);
-    res.send(metrics);
-  }));
-
-  metricsApp.listen(config.portMetrics);
+  express().use('/metrics', (_req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.send(register.metrics());
+  }).listen(config.portMetrics);
 }

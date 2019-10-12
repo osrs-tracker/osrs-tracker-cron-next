@@ -1,16 +1,16 @@
 import Agenda from 'agenda';
 import Axios from 'axios';
 import { MD5 } from 'object-hash';
-import { config } from '../../config/config';
-import { ItemPage } from '../models/item';
-import { Logger } from '../common/logger';
-import { Job } from './job';
+import { config } from '../../../config/config';
+import { ItemPage } from '../../models/item';
+import { Logger } from '../../common/logger';
+import { Job } from '../job';
 
 export const QUEUE_ITEMS = 'QUEUE_ITEMS';
 export const QUEUE_ITEMS_INTERVAL = '2 hours';
 
 export async function queueItems(_: Agenda.Job, done: (err?: Error | undefined) => void): Promise<void> {
-  Job.execute(QUEUE_ITEMS, done, async (jobId) => {
+  Job.executeAgenda(QUEUE_ITEMS, done, async (jobId) => {
     const response = await Axios.get<{ alpha: { letter: string, items: number }[]; }>(
       `${config.osrsItemApiBase}/category.json?category=1`,
       config.axios,
